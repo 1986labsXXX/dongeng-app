@@ -40,6 +40,7 @@ def create_pdf(text, judul, nama):
     pdf.multi_cell(0, 10, judul, align='C')
     pdf.ln(10)
     pdf.set_font("Arial", "", 12)
+    # Sanitasi teks agar aman untuk PDF
     clean_text = text.encode('latin-1', 'replace').decode('latin-1')
     pdf.multi_cell(0, 7, clean_text)
     return pdf.output(dest='S').encode('latin-1')
@@ -49,11 +50,11 @@ if check_password():
     st.title("🌙 Generator Dongeng Anak Islami")
     st.success("✅ Akses Diterima. Silakan buat cerita sepuasnya!")
 
-    # Mengambil API Key
+    # Cek API Key
     try:
         MY_API_KEY = st.secrets["GEMINI_API_KEY"]
     except:
-        st.error("API Key belum disetting di Secrets Streamlit!")
+        st.error("❌ API Key belum di-setting di Secrets Streamlit.")
         st.stop()
 
     with st.form("main_form"):
@@ -69,17 +70,43 @@ if check_password():
         submit = st.form_submit_button("✨ Buat Cerita")
 
     if submit and nama_anak:
+        # --- PERBAIKAN: TRY DAN EXCEPT HARUS SEJAJAR ---
         try:
             genai.configure(api_key=MY_API_KEY)
             
-            # --- PERBAIKAN: MENGGUNAKAN MODEL GEMINI PRO (LEBIH STABIL) ---
+            # Kita pakai model paling standar dulu agar tidak 404
             model = genai.GenerativeModel('gemini-pro')
             
             with st.spinner("Sedang mengarang cerita..."):
                 prompt = f"""
-                Buat cerita anak Islami pendek (400-600 kata).
-                Anak: {nama_anak} ({gender}, {usia}). Tema: {tema}. Masalah: {masalah}.
-                Aturan: Bahasa Indonesia ceria, hindari emoji, struktur: Judul - Isi - Pesan Moral - Doa.
-                Output langsung cerita. Baris pertama adalah JUDUL.
+                Bertindaklah sebagai penulis cerita anak.
+                Buat cerita pendek (400-500 kata) untuk anak bernama {nama_anak} ({gender}, {usia}).
+                Tema: {tema}. Masalah: {masalah}.
+                Aturan: Bahasa Indonesia ceria, mengandung nilai Islam, JANGAN pakai Emoji.
+                Format: Baris pertama adalah JUDUL (tanpa kata 'Judul:'). Sisanya isi cerita.
                 """
+                
                 response = model.generate_content(prompt)
+                full_text = response.text
+                
+                # Memisahkan Judul
+                parts = full_text.split('\n', 1)
+                if len(parts) > 1:
+                    judul = parts[0].replace('*', '').strip()
+                    isi = parts[1].strip()
+                else:
+                    judul = f"Kisah {nama_anak}"
+                    isi = full_text
+                
+                # Tampilkan di Layar
+                st.subheader(judul)
+                st.write(isi)
+                
+                # Download PDF
+                pdf_data = create_pdf(isi, judul, nama_anak)
+                st.download_button("📥 Download PDF", data=pdf_data, file_name=f"{nama_anak}.pdf", mime="application/pdf")
+
+        except Exception as e:
+            # INI BAGIAN YANG TADI HILANG/ERROR
+            st.error("Terjadi kesalahan saat menghubungi Google AI:")
+            st.error(e)
