@@ -82,7 +82,7 @@ if check_password():
     if submit and nama_anak:
         try:
             genai.configure(api_key=MY_API_KEY)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-pro')
             
             with st.spinner("Sedang mengarang cerita..."):
                 prompt = f"""
@@ -109,4 +109,5 @@ if check_password():
                 st.download_button("📥 Download PDF", data=pdf_data, file_name=f"{nama_anak}.pdf", mime="application/pdf")
                 
         except Exception as e:
+
             st.error(f"Error: {e}")
