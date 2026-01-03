@@ -1,5 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+import requests
+import json
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Generator Dongeng Anak", page_icon="🧚")
@@ -8,11 +9,9 @@ st.title("🧚 Generator Dongeng Anak")
 st.write("Buat cerita anak yang unik dan mendidik dalam hitungan detik!")
 
 # --- SETUP API KEY ---
-# Coba ambil API Key dari Streamlit Secrets
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
 except:
-    # Jika dijalankan di lokal tanpa secrets, minta input manual (opsional)
     api_key = st.text_input("Masukkan Google AI API Key:", type="password")
 
 # --- INPUT PENGGUNA ---
@@ -28,50 +27,51 @@ with col2:
 
 pesan_moral = st.text_area("Pesan Moral / Masalah yang ingin diperbaiki", placeholder="Misal: Malas gosok gigi, takut gelap")
 
+# --- FUNGSI REQUEST LANGSUNG KE GOOGLE (TANPA LIBRARY GENAI) ---
+def generate_story_direct(api_key, prompt):
+    # Kita pakai model 1.5 Flash lewat URL langsung
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }]
+    }
+    
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    
+    if response.status_code == 200:
+        return response.json()['candidates'][0]['content']['parts'][0]['text']
+    else:
+        # Jika error, tampilkan pesan error aslinya
+        return f"Error {response.status_code}: {response.text}"
+
 # --- LOGIKA TOMBOL ---
 if st.button("✨ Buat Cerita"):
     if not api_key:
-        st.error("API Key belum dimasukkan! Cek secrets atau input manual.")
+        st.error("API Key belum dimasukkan!")
     elif not nama_anak or not tema:
         st.warning("Mohon isi Nama Anak dan Tema terlebih dahulu.")
     else:
-        # Tampilkan loading spinner
         with st.spinner('Sedang mengarang cerita seru...'):
-            try:
-                # 1. Konfigurasi Model (Versi paling aman)
-                genai.configure(api_key=api_key)
-                
-                # Gunakan 1.5 Flash karena kuota gratisnya besar
-                model = genai.GenerativeModel('gemini-pro')
-                # 2. RAKIT PROMPT SECARA MANUAL
-                # Kita gabung instruksi sistem ke dalam prompt user agar kompatibel dengan semua versi library
-                prompt_lengkap = f"""
-                Bertindaklah sebagai penulis cerita anak profesional dan pendongeng yang hangat.
-                Tuliskan sebuah dongeng pendek untuk anak dengan detail berikut:
-                
-                - Nama Anak: {nama_anak}
-                - Gender: {gender}
-                - Usia: {usia}
-                - Tema/Minat: {tema}
-                - Pesan Moral/Masalah: {pesan_moral}
-
-                Panduan Cerita:
-                1. Gunakan bahasa Indonesia yang baku namun mudah dimengerti anak seusia tersebut.
-                2. Cerita harus ceria, aman, dan mendidik.
-                3. Jangan terlalu panjang (sekitar 300-500 kata).
-                4. Berikan Judul yang menarik di awal.
-                """
-
-                # 3. Request ke AI
-                response = model.generate_content(prompt_lengkap)
-                
-                # 4. Tampilkan Hasil
+            # Rakit Prompt
+            prompt_lengkap = f"""
+            Buatkan dongeng anak bahasa Indonesia.
+            Anak: {nama_anak} ({gender}, {usia}).
+            Tema: {tema}.
+            Pesan Moral: {pesan_moral}.
+            Cerita harus seru, mendidik, dan bahasa mudah dipahami.
+            """
+            
+            # Panggil Fungsi Manual
+            hasil = generate_story_direct(api_key, prompt_lengkap)
+            
+            # Cek jika hasilnya Error
+            if "Error" in hasil:
+                st.error("Gagal menghubungi Google:")
+                st.code(hasil)
+            else:
                 st.success("Cerita selesai dibuat!")
                 st.markdown("---")
-                st.markdown(response.text)
-
-            except Exception as e:
-                st.error("Terjadi kesalahan sistem:")
-                st.error(e)
-                st.info("Tips: Jika error '429', berarti kuota habis. Jika error lain, coba refresh halaman.")
-
+                st.markdown(hasil)
