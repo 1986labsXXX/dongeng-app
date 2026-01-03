@@ -42,8 +42,7 @@ if st.button("✨ Buat Cerita"):
                 genai.configure(api_key=api_key)
                 
                 # Gunakan 1.5 Flash karena kuota gratisnya besar
-                model = genai.GenerativeModel('gemini-1.5-flash')
-
+                model = genai.GenerativeModel('gemini-pro')
                 # 2. RAKIT PROMPT SECARA MANUAL
                 # Kita gabung instruksi sistem ke dalam prompt user agar kompatibel dengan semua versi library
                 prompt_lengkap = f"""
@@ -75,3 +74,4 @@ if st.button("✨ Buat Cerita"):
                 st.error("Terjadi kesalahan sistem:")
                 st.error(e)
                 st.info("Tips: Jika error '429', berarti kuota habis. Jika error lain, coba refresh halaman.")
+
