@@ -65,7 +65,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. GATEKEEPER TANPA PASSWORD (CUMA TOMBOL) ---
+# --- 3. GATEKEEPER TANPA PASSWORD (CUMA TOMBOL & INSTRUKSI) ---
 if "enter_app" not in st.session_state:
     st.session_state.enter_app = False
 
@@ -74,7 +74,7 @@ def show_landing_page():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
     
-    # PERINGATAN KERAS (Text Jelas dengan Box Custom HTML)
+    # PERINGATAN KERAS & INSTRUKSI ADD TO HOME SCREEN
     st.markdown("""
     <div style="background-color: #FFEBEE; border: 2px solid #FFCDD2; padding: 25px; border-radius: 15px; color: #3E2723; line-height: 1.6; font-family: sans-serif;">
         <div style="font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: #B71C1C;">
@@ -83,9 +83,15 @@ def show_landing_page():
         Sistem mendeteksi IP Address perangkat Anda.<br><br>
         Dilarang keras membagikan Link Akses ini kepada orang lain.
         Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),<br>
-        <span style="font-weight: bold; text-decoration: underline; color: #B71C1C;">Akses akan diblokir permanen tanpa pengembalian dana.
-        
-        Untuk memudahkan membuka aplikasi ini ke depannya, silahkan klik titik 3 di kanan atas lalu pilih Add to Home screen. </span>
+        <span style="font-weight: bold; text-decoration: underline; color: #B71C1C;">Akses akan diblokir permanen tanpa pengembalian dana.</span>
+        <br><br>
+        <div style="background-color: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 10px; border: 1px dashed #B71C1C; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.5rem;">📱</span>
+            <div>
+                <strong>Agar lebih mudah, pasang aplikasi ini di HP Anda:</strong><br>
+                Klik ikon titik tiga (⋮) di pojok kanan atas browser Anda, lalu pilih menu <strong>"Tambahkan ke Layar Utama"</strong>.
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -265,5 +271,6 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_form_only):
         pass
+
 
 
