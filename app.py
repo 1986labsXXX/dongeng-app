@@ -15,7 +15,7 @@ st.markdown("""
     .stApp { background-color: #FFF9C4; color: #4E342E; }
     
     /* Sidebar */
-    [data-testid="stSidebar"] { background-color: #FFF3E0; border-right: 2px dashed #FFB74D; }
+    [data-testid="stSidebar"] { background-color: #000000; border-right: 2px dashed #FFB74D; }
 
     /* Typography */
     h1 { font-family: 'Fredoka', sans-serif; color: #FF6F00 !important; font-size: 3.5rem !important; text-align: center; text-shadow: 3px 3px 0px #FFD54F; margin-bottom: -10px; }
@@ -263,3 +263,4 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_form_only):
         pass
+
