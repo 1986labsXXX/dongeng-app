@@ -65,8 +65,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. PASSWORD GATEKEEPER ---
-# --- 2. SISTEM LOGIN DENGAN PERINGATAN & EMAIL ---
+# --- 3. PASSWORD GATEKEEPER DENGAN PERINGATAN MERAH ---
 def check_password():
     def password_entered():
         if st.session_state["password"] == st.secrets["APP_PASSWORD"]:
@@ -79,19 +78,20 @@ def check_password():
         # TAMPILAN LOGIN
         st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
         
-        # --- PERINGATAN KERAS (BLUFFING) ---
+        # --- PERINGATAN KERAS (DENGAN TEKS MERAH) ---
         st.warning("""
-        ⚠️ **PERINGATAN KEAMANAN:**
+        <span style='color: red;'>
+        ⚠️ **PERINGATAN KEAMANAN:**<br>
         Sistem mendeteksi IP Address perangkat Anda.
         Dilarang keras membagikan Kode Akses ini kepada orang lain.
         Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),
         **Akses akan diblokir permanen tanpa pengembalian dana.**
-        """)
+        </span>
+        """, icon="⚠️")
         # ------------------------------------
 
         st.text_input("Masukkan Kode Akses:", type="password", on_change=password_entered, key="password", placeholder="Ketik kode akses Anda...")
         
-        # --- BAGIAN YANG DIUBAH (EMAIL) ---
         st.caption("Butuh bantuan? Email: 1986labs@gmail.com")
         
         return False
@@ -107,11 +107,8 @@ def check_password():
 if not check_password():
     st.stop()
 
-# --- 4. MANAJEMEN COOKIE (THE MAGIC PART) ---
-# Inisialisasi Cookie Manager dengan key unik agar aman
+# --- 4. MANAJEMEN COOKIE ---
 cookie_manager = stx.CookieManager(key="cookie_mgr")
-
-# Tunggu sebentar agar cookie manager load
 st.write("") 
 
 # Batas Kuota
@@ -122,10 +119,9 @@ MAX_QUOTA_AUDIO = 3
 cookie_cerita = cookie_manager.get(cookie="quota_cerita")
 cookie_suara = cookie_manager.get(cookie="quota_suara")
 
-# LOGIKA INIT (Perbaikan: Tambah KEY unik di setiap .set)
+# LOGIKA INIT
 if cookie_cerita is None:
     expires = datetime.datetime.now() + datetime.timedelta(days=1)
-    # Kita beri key="init_cerita" agar tidak bentrok
     cookie_manager.set("quota_cerita", MAX_QUOTA_TEXT, expires_at=expires, key="init_cerita")
     sisa_cerita = MAX_QUOTA_TEXT
 else:
@@ -133,7 +129,6 @@ else:
 
 if cookie_suara is None:
     expires = datetime.datetime.now() + datetime.timedelta(days=1)
-    # Kita beri key="init_suara" agar tidak bentrok dengan init_cerita
     cookie_manager.set("quota_suara", MAX_QUOTA_AUDIO, expires_at=expires, key="init_suara")
     sisa_suara = MAX_QUOTA_AUDIO
 else:
@@ -228,7 +223,6 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 # --- UPDATE COOKIE (KURANGI KUOTA) ---
                 new_quota = sisa_cerita - 1
                 expires = datetime.datetime.now() + datetime.timedelta(days=1)
-                # Tambah key="reduce_cerita" agar unik
                 cookie_manager.set("quota_cerita", new_quota, expires_at=expires, key="reduce_cerita")
                 
                 st.rerun()
@@ -258,7 +252,6 @@ if st.session_state.cerita_ready:
                     # --- UPDATE COOKIE AUDIO ---
                     new_quota_audio = sisa_suara - 1
                     expires = datetime.datetime.now() + datetime.timedelta(days=1)
-                    # Tambah key="reduce_suara" agar unik
                     cookie_manager.set("quota_suara", new_quota_audio, expires_at=expires, key="reduce_suara")
                     
                 except Exception as e:
@@ -270,4 +263,3 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_form_only):
         pass
-
