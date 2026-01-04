@@ -1,125 +1,121 @@
 import streamlit as st
 from groq import Groq
 
-# --- 1. SETUP HALAMAN & IMPORT FONT KHUSUS ---
+# --- 1. SETUP HALAMAN & IMPORT FONT ---
 st.set_page_config(page_title="Dunia Dongeng", page_icon="🎈", layout="centered")
 
-# Kita import font lucu dari Google Fonts agar tidak kaku
+# --- INJEKSI CSS & ORNAMEN ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&family=Patrick+Hand&display=swap');
 
-    /* --- BACKGROUND GRADASI PERMEN --- */
+    /* --- BACKGROUND & WARNA UTAMA (KEMBALI KE KUNING) --- */
     .stApp {
-        background: linear-gradient(180deg, #E0F7FA 0%, #F8BBD0 100%);
-        background-attachment: fixed;
+        background-color: #FFF9C4; /* Kuning Pastel */
+        color: #4E342E; /* Coklat Tua */
     }
 
-    /* --- JUDUL BESAR MEMBULAT --- */
+    /* --- ORNAMEN BACKGROUND (SVG ICONS) --- */
+    /* Agar ornamen ada di belakang konten */
+    .main .block-container {
+        position: relative;
+        z-index: 1;
+    }
+    .ornament {
+        position: fixed;
+        opacity: 0.15; /* Transparan samar */
+        z-index: 0; /* Di belakang layer utama */
+        pointer-events: none; /* Agar tidak bisa diklik */
+    }
+    /* Posisi Ornamen */
+    .orn-dino { top: 20px; left: 20px; width: 120px; }
+    .orn-astro { top: 30px; right: 30px; width: 100px; transform: rotate(15deg); }
+    .orn-flower { bottom: 20px; left: 20px; width: 90px; }
+    .orn-ball { bottom: 20px; right: 20px; width: 80px; }
+
+    /* --- TYPOGRAPHY --- */
     h1 {
         font-family: 'Fredoka', sans-serif;
-        color: #E91E63 !important; /* Pink Tua */
+        color: #FF6F00 !important; /* Oranye Terang */
         font-size: 3.5rem !important;
         text-align: center;
-        text-shadow: 4px 4px 0px #FFFFFF; /* Bayangan Putih */
-        margin-bottom: -20px;
+        text-shadow: 3px 3px 0px #FFD54F;
+        margin-bottom: -10px;
     }
-    
-    /* Sub-judul */
     .subtitle {
         font-family: 'Patrick Hand', cursive;
         font-size: 1.5rem;
-        color: #880E4F;
         text-align: center;
         margin-bottom: 30px;
+        color: #5D4037;
     }
-
-    /* --- INPUT FORM YANG LUCU --- */
     label {
         font-family: 'Fredoka', sans-serif !important;
-        color: #0097A7 !important; /* Biru Laut */
-        font-size: 1.2rem !important;
-    }
-    
-    /* Kotak Input jadi Bulat & Border Tebal */
-    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div {
-        border-radius: 20px !important;
-        border: 3px solid #4DD0E1 !important; /* Border Biru Cerah */
-        background-color: #FFFFFF !important;
-        color: #5D4037 !important; /* Teks Coklat (mirip pensil) */
-        font-family: 'Patrick Hand', cursive !important; /* Font Tulis Tangan */
-        font-size: 1.2rem !important;
-        box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-    }
-    
-    /* Fokus saat diketik */
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: #FF4081 !important; /* Berubah jadi Pink saat diklik */
+        color: #BF360C !important; /* Coklat Kemerahan */
+        font-size: 1.1rem !important;
     }
 
-    /* --- TOMBOL UTAMA (JELLY BUTTON) --- */
+    /* --- INPUT STYLES (Bulat & Jelas) --- */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div {
+        border-radius: 15px !important;
+        border: 2px solid #FFB74D !important; /* Border Oranye */
+        background-color: #FFFFFF !important;
+        color: #000000 !important; /* Teks Hitam Pekat */
+        font-family: 'Patrick Hand', cursive !important;
+        font-size: 1.1rem !important;
+        box-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+    }
+    /* Fokus */
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: #FF6F00 !important;
+    }
+    /* Dropdown Text */
+    div[data-baseweb="select"] span { color: #000000 !important; }
+
+    /* --- TOMBOL JELLY --- */
     .stButton>button {
         font-family: 'Fredoka', sans-serif !important;
-        font-size: 1.5rem !important;
-        background-image: linear-gradient(to right, #FF9800, #F57C00) !important;
+        font-size: 1.4rem !important;
+        background-image: linear-gradient(to bottom, #FF9800, #F57C00) !important;
         color: white !important;
-        border-radius: 50px !important; /* Sangat Bulat */
+        border-radius: 30px !important;
         border: none !important;
-        padding: 15px 30px !important;
-        box-shadow: 0px 6px 0px #E65100 !important; /* Efek 3D Tebal */
+        padding: 12px 25px !important;
+        box-shadow: 0px 5px 0px #E65100 !important; /* Efek 3D */
         transition: all 0.1s;
         margin-top: 10px;
     }
-    
-    /* Efek saat tombol ditekan (mendelep) */
     .stButton>button:active {
-        transform: translateY(6px);
+        transform: translateY(5px); /* Efek membal saat ditekan */
         box-shadow: 0px 0px 0px #E65100 !important;
     }
-
-    /* Tombol Download (Hijau Mint) */
-    div[data-testid="stDownloadButton"] > button {
-        background-image: linear-gradient(to right, #66BB6A, #43A047) !important;
-        box-shadow: 0px 6px 0px #2E7D32 !important;
-    }
-    div[data-testid="stDownloadButton"] > button:active {
-        transform: translateY(6px);
-        box-shadow: 0px 0px 0px #2E7D32 !important;
-    }
-
-    /* --- KOTAK CERITA (KERTAS BUKU) --- */
-    .kertas-cerita {
-        background-color: #FFF;
-        padding: 40px;
-        border-radius: 20px;
-        border: 4px dashed #FF8A65; /* Garis putus-putus oranye */
-        font-family: 'Patrick Hand', cursive;
-        font-size: 1.3rem;
-        line-height: 1.8;
-        color: #3E2723;
-        position: relative;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
     
-    /* Hiasan Pin Kertas */
-    .pin {
-        width: 20px; height: 20px; border-radius: 50%;
-        background-color: #FF4081; position: absolute;
-        top: 15px; left: 50%; transform: translateX(-50%);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    /* Tombol Download (Hijau) */
+    div[data-testid="stDownloadButton"] > button {
+        background-image: linear-gradient(to bottom, #66BB6A, #43A047) !important;
+        box-shadow: 0px 5px 0px #2E7D32 !important;
     }
+    div[data-testid="stDownloadButton"] > button:active { transform: translateY(5px); box-shadow: 0px 0px 0px !important; }
 
-    /* Kotak Pesan Moral (Awan Biru) */
+    /* --- KOTAK HASIL --- */
+    .kertas-cerita {
+        background-color: #FFF; padding: 35px; border-radius: 20px;
+        border: 3px dashed #FFB74D; font-family: 'Patrick Hand', cursive;
+        font-size: 1.3rem; line-height: 1.7; color: #3E2723;
+        box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+    }
     .kotak-pesan {
-        background-color: #E1F5FE;
-        border-radius: 20px;
-        padding: 20px;
-        margin-top: 20px;
-        border: 3px solid #81D4FA;
-        color: #0277BD;
-        font-family: 'Fredoka', sans-serif;
+        background-color: #E1F5FE; border-radius: 15px; padding: 20px;
+        margin-top: 20px; border: 2px solid #81D4FA;
+        color: #01579B; font-family: 'Fredoka', sans-serif;
     }
 </style>
+
+<img class="ornament orn-dino" src="https://cdn-icons-png.flaticon.com/512/3069/3069187.png">
+<img class="ornament orn-astro" src="https://cdn-icons-png.flaticon.com/512/2026/2026534.png">
+<img class="ornament orn-flower" src="https://cdn-icons-png.flaticon.com/512/2926/2926756.png">
+<img class="ornament orn-ball" src="https://cdn-icons-png.flaticon.com/512/3076/3076882.png">
+
 """, unsafe_allow_html=True)
 
 # --- 2. LOGIKA RESET ---
@@ -139,9 +135,10 @@ except:
     st.error("⚠️ Ups, Kunci API belum dipasang!")
     st.stop()
 
-# --- 5. INPUT FORM (Wadah Putih Transparan) ---
+# --- 5. INPUT FORM (Wadah Putih Transparan Agar Tulisan Jelas) ---
 with st.container():
-    st.markdown("<div style='background-color: rgba(255,255,255,0.6); padding: 20px; border-radius: 20px;'>", unsafe_allow_html=True)
+    # Menambahkan background putih transparan di area form agar tidak bertabrakan dengan ornamen
+    st.markdown("<div style='background-color: rgba(255,255,255,0.85); padding: 25px; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     with col1:
@@ -167,12 +164,12 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
             
             with st.spinner('🧚 Peri sedang menulis cerita... Tunggu ya!'):
                 
-                # Prompt Engineering
+                # Prompt Engineering (Meminta Cerita + Pertanyaan)
                 prompt_system = """
                 Kamu adalah pendongeng TK yang sangat ceria.
                 Tugas:
                 1. Tulis Cerita Anak (Min 5 Paragraf) yang seru & lucu.
-                2. Buat 3 Pertanyaan Diskusi.
+                2. Buat 3 Pertanyaan Diskusi/Pemantik setelah cerita.
                 Gunakan bahasa Indonesia yang santai, akrab, dan mudah dimengerti anak kecil.
                 """
                 
@@ -182,7 +179,7 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 Tema: {tema}
                 Moral: {pesan_moral}
                 
-                Format:
+                Format Wajib:
                 [JUDUL CERIA]
                 (Isi Cerita...)
                 
@@ -206,7 +203,7 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 
                 full_response = chat_completion.choices[0].message.content
                 
-                # Splitting
+                # Splitting (Memisahkan Cerita dan Pertanyaan)
                 if "---BATAS---" in full_response:
                     parts = full_response.split("---BATAS---")
                     cerita_text = parts[0].strip()
@@ -216,17 +213,16 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                     diskusi_text = "Yuk ajak ngobrol si kecil tentang cerita tadi!"
 
                 # --- HASIL ---
-                st.balloons() # Balon wajib keluar!
+                st.balloons() # Efek Balon
                 
-                # Tampilan Kertas Cerita
+                # 1. Tampilan Kertas Cerita
                 st.markdown(f"""
                 <div class='kertas-cerita'>
-                    <div class='pin'></div>
                     {cerita_text.replace(chr(10), '<br>')}
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Tampilan Kotak Pesan
+                # 2. Tampilan Kotak Pesan (Pertanyaan Pemantik)
                 st.markdown(f"""
                 <div class='kotak-pesan'>
                     <strong>💡 Obrolan Seru Sebelum Tidur:</strong><br>
@@ -234,13 +230,13 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 </div>
                 """, unsafe_allow_html=True)
 
-                # Download Button
-                text_download = f"DONGENG UNTUK {nama_anak.upper()}\n\n{cerita_text}\n\n----------------\n{diskusi_text}"
+                # 3. Download Button (Teks Gabungan)
+                text_download = f"DONGENG UNTUK {nama_anak.upper()}\n\n{cerita_text}\n\n----------------\n{diskusi_text}\n\nDibuat oleh Dunia Dongeng"
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 col_dl, col_reset = st.columns([1, 1])
                 with col_dl:
-                    st.download_button("📥 SIMPAN CERITA", text_download, f"Dongeng_{nama_anak}.txt")
+                    st.download_button("📥 SIMPAN TEKS CERITA", text_download, f"Dongeng_{nama_anak}.txt")
 
         except Exception as e:
             st.error(f"Yah, peri lagi istirahat: {e}")
