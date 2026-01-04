@@ -89,7 +89,7 @@ def show_landing_page():
             <span style="font-size: 1.5rem;">📱</span>
             <div>
                 <strong>Agar lebih mudah, pasang aplikasi ini di HP Anda:</strong><br>
-                Klik ikon titik tiga (⋮) di pojok kanan atas browser Anda, lalu pilih menu <strong>"Tambahkan ke Layar Utama"</strong>.
+                Klik ikon titik tiga (⋮) di pojok kanan atas browser Anda, lalu pilih menu <strong>"Tambahkan ke Layar Utama/Add to Home Screen"</strong>.
             </div>
         </div>
     </div>
@@ -271,6 +271,7 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_form_only):
         pass
+
 
 
 
