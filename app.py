@@ -45,29 +45,34 @@ st.markdown("""
     }
     .stButton>button:active { transform: translateY(5px); box-shadow: 0px 0px 0px #E65100 !important; }
     
-    /* TOMBOL AUDIO (Biru) */
+    /* TOMBOL AUDIO (Biru Langit) */
     .tombol-audio > button {
         background-image: linear-gradient(to bottom, #29B6F6, #039BE5) !important;
         box-shadow: 0px 5px 0px #0277BD !important;
     }
 
-    /* KOTAK HASIL */
+    /* KOTAK HASIL CERITA */
     .kertas-cerita {
         background-color: #FFF; padding: 35px; border-radius: 20px;
         border: 3px dashed #FFB74D; font-family: 'Patrick Hand', cursive;
         font-size: 1.3rem; line-height: 1.7; color: #3E2723;
         box-shadow: 5px 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
     }
+    
+    /* KOTAK PESAN / DISKUSI (Biru Muda) */
     .kotak-pesan {
         background-color: #E1F5FE; border-radius: 15px; padding: 20px;
         margin-top: 10px; border: 2px solid #81D4FA;
         color: #01579B; font-family: 'Fredoka', sans-serif;
     }
-    
-    /* MODIFIKASI KOTAK CODE (AGAR TOMBOL COPY TERLIHAT BAGUS) */
-    .stCode {
-        font-family: 'Patrick Hand', cursive !important;
-        font-size: 1rem !important;
+
+    /* FIX AUDIO PLAYER BACKGROUND DI HP */
+    /* Memaksa elemen audio browser memiliki background biru muda */
+    audio {
+        background-color: #E1F5FE !important;
+        border-radius: 10px !important;
+        width: 100%;
+        border: 2px solid #81D4FA;
     }
 </style>
 
@@ -117,7 +122,7 @@ with st.container():
     pesan_moral = st.text_area("Pesan Kebaikan (Moral)", placeholder="Contoh: Harus rajin sikat gigi", key="pesan_moral")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- 6. PROSES GENERATE (Disimpan ke Session State) ---
+# --- 6. PROSES GENERATE ---
 st.markdown("<br>", unsafe_allow_html=True)
 
 if st.button("✨ SULAP JADI CERITA! ✨"):
@@ -150,8 +155,7 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 )
                 full_response = chat_completion.choices[0].message.content
                 
-                # --- PEMBERSIHAN DATA ---
-                # Hapus tanda bintang (*) dan pagar (#) agar suara bersih
+                # Bersihkan asterisk (*) dan pagar (#)
                 full_response = full_response.replace('*', '').replace('#', '')
 
                 if "---BATAS---" in full_response:
@@ -169,7 +173,7 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
         except Exception as e:
             st.error(f"Error: {e}")
 
-# --- 7. MENAMPILKAN HASIL & TOMBOL AUDIO ---
+# --- 7. TAMPILAN HASIL ---
 if st.session_state.cerita_ready:
     st.balloons()
     
@@ -180,27 +184,20 @@ if st.session_state.cerita_ready:
     </div>
     """, unsafe_allow_html=True)
 
-    col_audio, col_copy = st.columns([1, 1])
-    
-    with col_audio:
-        # Tombol Khusus Generate Suara
-        if st.button("🔊 BACA (SUARA)", help="Klik untuk mendengarkan"):
-            with st.spinner("Sedang memproses suara..."):
-                try:
-                    # gTTS membaca teks yang sudah bersih dari bintang
-                    tts = gTTS(text=st.session_state.cerita_text, lang='id', slow=False)
-                    sound_file = io.BytesIO()
-                    tts.write_to_fp(sound_file)
-                    st.audio(sound_file, format='audio/mp3', start_time=0)
-                except Exception as e:
-                    st.error("Gagal memuat suara.")
-
-    with col_copy:
-        # Tombol Salin (Copy)
-        # Kita gunakan st.code karena ini satu-satunya cara native memunculkan tombol copy
-        text_for_wa = f"DONGENG {st.session_state.nama_anak.upper()}\n\n{st.session_state.cerita_text}\n\n---\n{st.session_state.diskusi_text}"
-        st.markdown("**Salin Cerita (Klik ikon 📄 di pojok kanan):**")
-        st.code(text_for_wa, language=None)
+    # TOMBOL AUDIO (Full Width karena Copy dihapus)
+    # Tombol Khusus Generate Suara
+    if st.button("🔊 BACA DENGAN SUARA (Klik Disini)", help="Klik untuk mendengarkan dongeng"):
+        with st.spinner("Sedang memproses suara..."):
+            try:
+                # gTTS membaca teks
+                tts = gTTS(text=st.session_state.cerita_text, lang='id', slow=False)
+                sound_file = io.BytesIO()
+                tts.write_to_fp(sound_file)
+                
+                # Audio Player dengan background yang sudah diset di CSS
+                st.audio(sound_file, format='audio/mp3', start_time=0)
+            except Exception as e:
+                st.error("Gagal memuat suara.")
 
     # KOTAK DISKUSI
     st.markdown(f"""
