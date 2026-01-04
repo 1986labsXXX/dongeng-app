@@ -65,47 +65,46 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. PASSWORD GATEKEEPER DENGAN PERINGATAN MERAH ---
-def check_password():
-    def password_entered():
-        if st.session_state["password"] == st.secrets["APP_PASSWORD"]:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]
-        else:
-            st.session_state["password_correct"] = False
+# --- 3. GATEKEEPER TANPA PASSWORD (CUMA TOMBOL) ---
+if "enter_app" not in st.session_state:
+    st.session_state.enter_app = False
 
-    if "password_correct" not in st.session_state:
-        # TAMPILAN LOGIN
-        st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
-        
-        # --- PERINGATAN KERAS (DENGAN TEKS MERAH) ---
-        st.warning("""
-        <span style='color: red;'>
-        ⚠️ **PERINGATAN KEAMANAN:**<br>
-        Sistem mendeteksi IP Address perangkat Anda.
-        Dilarang keras membagikan Kode Akses ini kepada orang lain.
-        Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),
-        **Akses akan diblokir permanen tanpa pengembalian dana.**
-        </span>
-        """, icon="⚠️")
-        # ------------------------------------
+def show_landing_page():
+    # TAMPILAN HALAMAN DEPAN (WARNING)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
+    
+    # PERINGATAN KERAS (Text Jelas)
+    st.error("""
+    <div style='color: #3E2723; font-weight: 600; font-size: 1.1rem; line-height: 1.6;'>
+    ⚠️ PERINGATAN KEAMANAN:<br>
+    Sistem mendeteksi IP Address perangkat Anda.
+    <br><br>
+    Dilarang keras membagikan Link Akses ini kepada orang lain.
+    Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),
+    <span style='text-decoration: underline; color: #b71c1c;'>Akses akan diblokir permanen tanpa pengembalian dana.</span>
+    </div>
+    """, icon="⛔")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # TOMBOL AKSES
+    col_spacer, col_btn, col_spacer2 = st.columns([1, 2, 1])
+    with col_btn:
+        if st.button("🚀 AKSES GENERATOR SEKARANG"):
+            st.session_state.enter_app = True
+            st.rerun()
+            
+    st.markdown("<p style='text-align: center; color: #5D4037; margin-top: 20px;'>Butuh bantuan? Email: 1986labs@gmail.com</p>", unsafe_allow_html=True)
 
-        st.text_input("Masukkan Kode Akses:", type="password", on_change=password_entered, key="password", placeholder="Ketik kode akses Anda...")
-        
-        st.caption("Butuh bantuan? Email: 1986labs@gmail.com")
-        
-        return False
-        
-    elif not st.session_state["password_correct"]:
-        st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
-        st.text_input("Masukkan Kode Akses:", type="password", on_change=password_entered, key="password", placeholder="Ketik kode akses Anda...")
-        st.error("⛔ Akses Ditolak: Kode salah atau sudah kadaluarsa.")
-        return False
-    else:
-        return True
-
-if not check_password():
+# JIKA BELUM KLIK MASUK, TAMPILKAN LANDING PAGE & STOP
+if not st.session_state.enter_app:
+    show_landing_page()
     st.stop()
+
+# ==========================================
+# JIKA SUDAH KLIK TOMBOL, MASUK KE APLIKASI
+# ==========================================
 
 # --- 4. MANAJEMEN COOKIE ---
 cookie_manager = stx.CookieManager(key="cookie_mgr")
