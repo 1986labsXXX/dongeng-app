@@ -45,7 +45,7 @@ if st.button("🚀 Buat Cerita"):
                         "content": f"Buatkan cerita pendek. Anak: {nama_anak} ({gender}, {usia}). Tema: {tema}. Moral: {pesan_moral}."
                     }
                 ],
-                model="llama3-8b-8192",
+                model="llama-3.3-70b-versatile",
             )
             
             # 3. Tampilkan
@@ -55,3 +55,4 @@ if st.button("🚀 Buat Cerita"):
             
     except Exception as e:
         st.error(f"Terjadi Error: {e}")
+
