@@ -74,17 +74,18 @@ def show_landing_page():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
     
-    # PERINGATAN KERAS (Text Jelas)
-    st.error("""
-    <div style='color: #3E2723; font-weight: 600; font-size: 1.1rem; line-height: 1.6;'>
-    ⚠️ PERINGATAN KEAMANAN:<br>
-    Sistem mendeteksi IP Address perangkat Anda.
-    <br><br>
-    Dilarang keras membagikan Link Akses ini kepada orang lain.
-    Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),
-    <span style='text-decoration: underline; color: #b71c1c;'>Akses akan diblokir permanen tanpa pengembalian dana.</span>
+    # PERINGATAN KERAS (Text Jelas dengan Box Custom HTML)
+    st.markdown("""
+    <div style="background-color: #FFEBEE; border: 2px solid #FFCDD2; padding: 25px; border-radius: 15px; color: #3E2723; line-height: 1.6; font-family: sans-serif;">
+        <div style="font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: #B71C1C;">
+            <span>⛔</span> PERINGATAN KEAMANAN
+        </div>
+        Sistem mendeteksi IP Address perangkat Anda.<br><br>
+        Dilarang keras membagikan Link Akses ini kepada orang lain.
+        Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),<br>
+        <span style="font-weight: bold; text-decoration: underline; color: #B71C1C;">Akses akan diblokir permanen tanpa pengembalian dana.</span>
     </div>
-    """, icon="⛔")
+    """, unsafe_allow_html=True)
     
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -95,7 +96,7 @@ def show_landing_page():
             st.session_state.enter_app = True
             st.rerun()
             
-    st.markdown("<p style='text-align: center; color: #5D4037; margin-top: 20px;'>Butuh bantuan? Email: 1986labs@gmail.com</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #5D4037; margin-top: 20px; font-size: 0.9rem;'>Butuh bantuan? Email: 1986labs@gmail.com</p>", unsafe_allow_html=True)
 
 # JIKA BELUM KLIK MASUK, TAMPILKAN LANDING PAGE & STOP
 if not st.session_state.enter_app:
