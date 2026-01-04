@@ -92,10 +92,10 @@ if not check_password():
     st.stop()
 
 # --- 4. MANAJEMEN COOKIE (THE MAGIC PART) ---
-# Inisialisasi Cookie Manager
-cookie_manager = stx.CookieManager()
+# Inisialisasi Cookie Manager dengan key unik agar aman
+cookie_manager = stx.CookieManager(key="cookie_mgr")
 
-# Tunggu sebentar agar cookie manager load (Streamlit quirk)
+# Tunggu sebentar agar cookie manager load
 st.write("") 
 
 # Batas Kuota
@@ -106,18 +106,19 @@ MAX_QUOTA_AUDIO = 3
 cookie_cerita = cookie_manager.get(cookie="quota_cerita")
 cookie_suara = cookie_manager.get(cookie="quota_suara")
 
-# LOGIKA: Jika cookie belum ada (User baru / Sudah 24 jam), set ke MAX
+# LOGIKA INIT (Perbaikan: Tambah KEY unik di setiap .set)
 if cookie_cerita is None:
-    # Set Cookie baru yang expired besok (1 hari kemudian)
     expires = datetime.datetime.now() + datetime.timedelta(days=1)
-    cookie_manager.set("quota_cerita", MAX_QUOTA_TEXT, expires_at=expires)
+    # Kita beri key="init_cerita" agar tidak bentrok
+    cookie_manager.set("quota_cerita", MAX_QUOTA_TEXT, expires_at=expires, key="init_cerita")
     sisa_cerita = MAX_QUOTA_TEXT
 else:
     sisa_cerita = int(cookie_cerita)
 
 if cookie_suara is None:
     expires = datetime.datetime.now() + datetime.timedelta(days=1)
-    cookie_manager.set("quota_suara", MAX_QUOTA_AUDIO, expires_at=expires)
+    # Kita beri key="init_suara" agar tidak bentrok dengan init_cerita
+    cookie_manager.set("quota_suara", MAX_QUOTA_AUDIO, expires_at=expires, key="init_suara")
     sisa_suara = MAX_QUOTA_AUDIO
 else:
     sisa_suara = int(cookie_suara)
@@ -148,7 +149,7 @@ except:
     st.error("⚠️ Ups, Kunci API belum dipasang!")
     st.stop()
 
-# --- 7. STATE UNTUK CERITA (Agar tidak hilang saat klik) ---
+# --- 7. STATE UNTUK CERITA ---
 if "cerita_ready" not in st.session_state:
     st.session_state.cerita_ready = False
     st.session_state.cerita_text = ""
@@ -179,7 +180,7 @@ with st.container():
 st.markdown("<br>", unsafe_allow_html=True)
 
 if st.button("✨ SULAP JADI CERITA! ✨"):
-    # Cek Kuota dari Variable Cookie
+    # Cek Kuota
     if sisa_cerita <= 0:
         st.error("🛑 Yah, Kuota Cerita habis! Kembali lagi besok ya Bun (Tunggu 24 Jam).")
     elif not nama_anak or not tema or not gender or not usia:
@@ -211,9 +212,9 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 # --- UPDATE COOKIE (KURANGI KUOTA) ---
                 new_quota = sisa_cerita - 1
                 expires = datetime.datetime.now() + datetime.timedelta(days=1)
-                cookie_manager.set("quota_cerita", new_quota, expires_at=expires)
+                # Tambah key="reduce_cerita" agar unik
+                cookie_manager.set("quota_cerita", new_quota, expires_at=expires, key="reduce_cerita")
                 
-                # Refresh agar UI Sidebar terupdate
                 st.rerun()
 
         except Exception as e:
@@ -241,10 +242,8 @@ if st.session_state.cerita_ready:
                     # --- UPDATE COOKIE AUDIO ---
                     new_quota_audio = sisa_suara - 1
                     expires = datetime.datetime.now() + datetime.timedelta(days=1)
-                    cookie_manager.set("quota_suara", new_quota_audio, expires_at=expires)
-                    
-                    # Perlu sleep sedikit agar cookie tersimpan sebelum audio play, 
-                    # tapi di Streamlit agak tricky. Kita biarkan update di next interaction.
+                    # Tambah key="reduce_suara" agar unik
+                    cookie_manager.set("quota_suara", new_quota_audio, expires_at=expires, key="reduce_suara")
                     
                 except Exception as e:
                     st.error("Gagal memuat suara.")
