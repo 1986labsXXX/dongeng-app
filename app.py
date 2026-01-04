@@ -4,7 +4,7 @@ from gtts import gTTS
 import io
 
 # --- 1. SETUP HALAMAN & IMPORT FONT ---
-st.set_page_config(page_title="Dunia Dongeng", page_icon="🎈", layout="centered")
+st.set_page_config(page_title="CERITA AJAIB KITA", page_icon="🎈", layout="centered")
 
 # --- INJEKSI CSS & ORNAMEN ---
 st.markdown("""
@@ -215,3 +215,4 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_app):
         pass
+
