@@ -66,6 +66,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 3. PASSWORD GATEKEEPER ---
+# --- 2. SISTEM LOGIN DENGAN PERINGATAN & EMAIL ---
 def check_password():
     def password_entered():
         if st.session_state["password"] == st.secrets["APP_PASSWORD"]:
@@ -75,15 +76,30 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Masuk Dulu Yuk!</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center;'>Masukkan Kode Akses yang sudah Bunda beli:</p>", unsafe_allow_html=True)
-        st.text_input("Kode Akses", type="password", on_change=password_entered, key="password", placeholder="Ketik kode di sini...")
-        st.info("💡 Belum punya kode? Hubungi Admin via WhatsApp.")
+        # TAMPILAN LOGIN
+        st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
+        
+        # --- PERINGATAN KERAS (BLUFFING) ---
+        st.warning("""
+        ⚠️ **PERINGATAN KEAMANAN:**
+        Sistem mendeteksi IP Address perangkat Anda.
+        Dilarang keras membagikan Kode Akses ini kepada orang lain.
+        Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),
+        **Akses akan diblokir permanen tanpa pengembalian dana.**
+        """)
+        # ------------------------------------
+
+        st.text_input("Masukkan Kode Akses:", type="password", on_change=password_entered, key="password", placeholder="Ketik kode akses Anda...")
+        
+        # --- BAGIAN YANG DIUBAH (EMAIL) ---
+        st.caption("Butuh bantuan? Email: 1986labs@gmail.com")
+        
         return False
+        
     elif not st.session_state["password_correct"]:
-        st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Masuk Dulu Yuk!</h1>", unsafe_allow_html=True)
-        st.text_input("Kode Akses", type="password", on_change=password_entered, key="password", placeholder="Ketik kode di sini...")
-        st.error("😕 Kode salah, coba cek lagi ya Bun!")
+        st.markdown("<h1 style='text-align: center; color: #FF6F00;'>🔐 Area Member Premium</h1>", unsafe_allow_html=True)
+        st.text_input("Masukkan Kode Akses:", type="password", on_change=password_entered, key="password", placeholder="Ketik kode akses Anda...")
+        st.error("⛔ Akses Ditolak: Kode salah atau sudah kadaluarsa.")
         return False
     else:
         return True
@@ -254,3 +270,4 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_form_only):
         pass
+
