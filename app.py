@@ -27,15 +27,16 @@ st.markdown("""
     .subtitle { font-family: 'Patrick Hand', cursive; font-size: 1.5rem; text-align: center; margin-bottom: 30px; color: #5D4037; }
     label { font-family: 'Fredoka', sans-serif !important; color: #BF360C !important; font-size: 1.1rem !important; }
 
-    /* INPUT STYLES */
+    /* INPUT STYLES (Perbaikan Bayangan Hitam) */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div {
         border-radius: 15px !important; border: 2px solid #FFB74D !important;
         background-color: #FFFFFF !important; color: #000000 !important;
         font-family: 'Patrick Hand', cursive !important; font-size: 1.1rem !important;
+        box-shadow: none !important; /* Bayangan hitam dihilangkan */
     }
     div[data-baseweb="select"] span { color: #000000 !important; }
 
-    /* TOMBOL JELLY */
+    /* TOMBOL JELLY (SULAP JADI CERITA) */
     .stButton>button {
         font-family: 'Fredoka', sans-serif !important; font-size: 1.4rem !important;
         background-image: linear-gradient(to bottom, #FF9800, #F57C00) !important;
@@ -45,10 +46,15 @@ st.markdown("""
     }
     .stButton>button:active { transform: translateY(5px); box-shadow: 0px 0px 0px #E65100 !important; }
     
-    /* TOMBOL AUDIO (Biru Langit) */
-    .tombol-audio > button {
+    /* TOMBOL AUDIO (Biru Langit - Perbaikan Warna Teks) */
+    /* Kita tambahkan class khusus agar bisa ditarget dengan CSS */
+    .tombol-audio-container button {
         background-image: linear-gradient(to bottom, #29B6F6, #039BE5) !important;
         box-shadow: 0px 5px 0px #0277BD !important;
+        color: white !important; /* Teks dipaksa Putih */
+    }
+    .tombol-audio-container button p {
+        color: white !important; /* Memastikan teks di dalamnya juga putih */
     }
 
     /* KOTAK HASIL CERITA */
@@ -59,20 +65,17 @@ st.markdown("""
         box-shadow: 5px 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
     }
     
-    /* KOTAK PESAN / DISKUSI (Biru Muda) */
+    /* KOTAK PESAN / DISKUSI */
     .kotak-pesan {
         background-color: #E1F5FE; border-radius: 15px; padding: 20px;
         margin-top: 10px; border: 2px solid #81D4FA;
         color: #01579B; font-family: 'Fredoka', sans-serif;
     }
 
-    /* FIX AUDIO PLAYER BACKGROUND DI HP */
-    /* Memaksa elemen audio browser memiliki background biru muda */
+    /* FIX AUDIO PLAYER */
     audio {
-        background-color: #E1F5FE !important;
-        border-radius: 10px !important;
-        width: 100%;
-        border: 2px solid #81D4FA;
+        background-color: #E1F5FE !important; border-radius: 10px !important;
+        width: 100%; border: 2px solid #81D4FA;
     }
 </style>
 
@@ -184,8 +187,8 @@ if st.session_state.cerita_ready:
     </div>
     """, unsafe_allow_html=True)
 
-    # TOMBOL AUDIO (Full Width karena Copy dihapus)
-    # Tombol Khusus Generate Suara
+    # TOMBOL AUDIO (Dibungkus div khusus untuk target CSS)
+    st.markdown('<div class="tombol-audio-container">', unsafe_allow_html=True)
     if st.button("🔊 BACA DENGAN SUARA (Klik Disini)", help="Klik untuk mendengarkan dongeng"):
         with st.spinner("Sedang memproses suara..."):
             try:
@@ -194,10 +197,11 @@ if st.session_state.cerita_ready:
                 sound_file = io.BytesIO()
                 tts.write_to_fp(sound_file)
                 
-                # Audio Player dengan background yang sudah diset di CSS
+                # Audio Player
                 st.audio(sound_file, format='audio/mp3', start_time=0)
             except Exception as e:
                 st.error("Gagal memuat suara.")
+    st.markdown('</div>', unsafe_allow_html=True) # Tutup div container
 
     # KOTAK DISKUSI
     st.markdown(f"""
