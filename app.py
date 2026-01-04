@@ -63,6 +63,12 @@ st.markdown("""
         margin-top: 10px; border: 2px solid #81D4FA;
         color: #01579B; font-family: 'Fredoka', sans-serif;
     }
+    
+    /* MODIFIKASI KOTAK CODE (AGAR TOMBOL COPY TERLIHAT BAGUS) */
+    .stCode {
+        font-family: 'Patrick Hand', cursive !important;
+        font-size: 1rem !important;
+    }
 </style>
 
 <img class="ornament orn-dino" src="https://cdn-icons-png.flaticon.com/512/3069/3069187.png">
@@ -123,12 +129,20 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
             with st.spinner('🧚 Peri sedang menulis cerita... Tunggu ya!'):
                 prompt_system = """
                 Kamu adalah pendongeng TK yang ceria. 
-                Tugas: Tulis Cerita Anak (Min 5 Paragraf) & 3 Pertanyaan Diskusi.
-                Bahasa Indonesia yang santai & seru.
+                Tugas: 
+                1. Tulis Cerita Anak (Min 5 Paragraf) dalam Bahasa Indonesia.
+                2. PENTING: Tulis JUDUL CERITA dengan HURUF KAPITAL SAJA di baris pertama. JANGAN gunakan tanda bintang (*) atau pagar (#).
+                3. Buat 3 Pertanyaan Diskusi di akhir.
+                Gunakan bahasa yang santai & seru.
                 """
                 prompt_user = f"""
                 Anak: {nama_anak} ({gender}, {usia}). Hobi: {hobi}. Tema: {tema}. Moral: {pesan_moral}
-                Format: [JUDUL CERIA] (Isi Cerita...) ---BATAS--- [OBROLAN SERU] 1... 2... 3...
+                Format:
+                JUDUL KAPITAL (Tanpa tanda baca)
+                (Isi Cerita...)
+                ---BATAS---
+                [OBROLAN SERU]
+                1... 2... 3...
                 """
                 chat_completion = client.chat.completions.create(
                     messages=[{"role": "system", "content": prompt_system}, {"role": "user", "content": prompt_user}],
@@ -136,7 +150,10 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 )
                 full_response = chat_completion.choices[0].message.content
                 
-                # Simpan ke memori (Session State) agar tidak hilang saat klik tombol audio
+                # --- PEMBERSIHAN DATA ---
+                # Hapus tanda bintang (*) dan pagar (#) agar suara bersih
+                full_response = full_response.replace('*', '').replace('#', '')
+
                 if "---BATAS---" in full_response:
                     parts = full_response.split("---BATAS---")
                     st.session_state.cerita_text = parts[0].strip()
@@ -147,7 +164,6 @@ if st.button("✨ SULAP JADI CERITA! ✨"):
                 
                 st.session_state.nama_anak = nama_anak
                 st.session_state.cerita_ready = True
-                # Rerun agar tampilan di bawah langsung update
                 st.rerun()
 
         except Exception as e:
@@ -164,31 +180,27 @@ if st.session_state.cerita_ready:
     </div>
     """, unsafe_allow_html=True)
 
-    # AREA TOMBOL AUDIO & DOWNLOAD
-    col_audio, col_dl = st.columns([2, 1])
+    col_audio, col_copy = st.columns([1, 1])
     
     with col_audio:
         # Tombol Khusus Generate Suara
-        if st.button("🔊 BACA DENGAN SUARA (Audio)", help="Klik untuk mendengarkan dongeng"):
+        if st.button("🔊 BACA (SUARA)", help="Klik untuk mendengarkan"):
             with st.spinner("Sedang memproses suara..."):
                 try:
-                    # Menggunakan gTTS (Google Text to Speech) - Gratis
+                    # gTTS membaca teks yang sudah bersih dari bintang
                     tts = gTTS(text=st.session_state.cerita_text, lang='id', slow=False)
-                    
-                    # Simpan ke memory buffer (tidak perlu save file ke disk)
                     sound_file = io.BytesIO()
                     tts.write_to_fp(sound_file)
-                    
-                    # Tampilkan Audio Player
                     st.audio(sound_file, format='audio/mp3', start_time=0)
-                    st.success("Silakan di-play! 🎧")
                 except Exception as e:
-                    st.error("Gagal memuat suara. Cek koneksi internet.")
+                    st.error("Gagal memuat suara.")
 
-    with col_dl:
-        # Tombol Download Teks
-        full_text = f"DONGENG {st.session_state.nama_anak.upper()}\n\n{st.session_state.cerita_text}\n\n---\n{st.session_state.diskusi_text}"
-        st.download_button("📥 SIMPAN TEKS", full_text, f"Dongeng_{st.session_state.nama_anak}.txt")
+    with col_copy:
+        # Tombol Salin (Copy)
+        # Kita gunakan st.code karena ini satu-satunya cara native memunculkan tombol copy
+        text_for_wa = f"DONGENG {st.session_state.nama_anak.upper()}\n\n{st.session_state.cerita_text}\n\n---\n{st.session_state.diskusi_text}"
+        st.markdown("**Salin Cerita (Klik ikon 📄 di pojok kanan):**")
+        st.code(text_for_wa, language=None)
 
     # KOTAK DISKUSI
     st.markdown(f"""
