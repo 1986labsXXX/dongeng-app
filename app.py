@@ -1,60 +1,57 @@
 import streamlit as st
-import requests
-import json
+from groq import Groq
 
-st.set_page_config(page_title="Generator Dongeng Anak", page_icon="🧚")
-st.title("🧚 Generator Dongeng Anak")
+# --- KONFIGURASI HALAMAN ---
+st.set_page_config(page_title="Generator Dongeng Anak", page_icon="🦁")
+st.title("🦁 Generator Dongeng Anak (via Groq)")
+st.write("Super cepat & Gratis menggunakan teknologi Llama 3")
 
 # --- SETUP API KEY ---
+# Kita ambil kunci dari "Secrets" di Streamlit Cloud
 try:
-    api_key = st.secrets["GEMINI_API_KEY"]
+    api_key = st.secrets["GROQ_API_KEY"]
 except:
-    api_key = st.text_input("Masukkan Google AI API Key:", type="password")
+    # Jika lupa set secrets, munculkan pesan error yang jelas
+    st.error("Settingan API Key belum ada. Masukkan GROQ_API_KEY di Secrets Streamlit ya!")
+    st.stop()
 
-# --- FUNGSI REQUEST LANGSUNG (JALUR STABIL V1) ---
-def generate_story_direct(api_key, prompt):
-    # PERBAIKAN UTAMA: Menggunakan 'v1' (bukan v1beta) agar tidak 404
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
-    
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
-    }
-    
-    # Kirim request
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    
-    if response.status_code == 200:
-        return response.json()['candidates'][0]['content']['parts'][0]['text']
-    else:
-        return f"ERROR {response.status_code}: {response.text}"
+# --- INPUT USER ---
+col1, col2 = st.columns(2)
+with col1:
+    nama_anak = st.text_input("Nama Anak", "Budi")
+    usia = st.selectbox("Usia", ["Balita (1-3 Th)", "TK (4-6 Th)", "SD (7-10 Th)"])
+with col2:
+    tema = st.text_input("Tema", "Petualangan di Hutan")
+    gender = st.selectbox("Gender", ["Laki-laki", "Perempuan"])
 
-# --- INPUT PENGGUNA ---
-nama_anak = st.text_input("Nama Anak", placeholder="Misal: Budi")
-tema = st.text_input("Tema/Hobi", placeholder="Misal: Berenang")
-usia = st.selectbox("Usia", ["Balita (1-3 Th)", "Prasekolah (3-5 Th)", "Sekolah (6-9 Th)"])
-gender = st.selectbox("Gender", ["Laki-laki", "Perempuan"])
-pesan_moral = st.text_area("Pesan Moral", placeholder="Misal: Malas makan")
+pesan_moral = st.text_area("Pesan Moral", "Pentingnya berbagi mainan")
 
-# --- TOMBOL ---
-if st.button("✨ Buat Cerita"):
-    if not api_key:
-        st.error("API Key kosong!")
-    elif not nama_anak or not tema:
-        st.warning("Isi nama dan tema dulu ya.")
-    else:
-        with st.spinner('Sedang membuat cerita...'):
-            prompt = f"Buatkan dongeng anak Indonesia. Anak: {nama_anak} ({gender}, {usia}). Tema: {tema}. Moral: {pesan_moral}. Bahasa ceria & mudah."
+# --- TOMBOL EKSEKUSI ---
+if st.button("🚀 Buat Cerita"):
+    try:
+        # 1. Inisialisasi
+        client = Groq(api_key=api_key)
+        
+        with st.spinner('Sedang mengetik cerita...'):
+            # 2. Request ke Groq (Model Llama 3)
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Kamu adalah pendongeng anak profesional. Gunakan bahasa Indonesia yang ceria, mendidik, dan mudah dipahami anak-anak."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Buatkan cerita pendek. Anak: {nama_anak} ({gender}, {usia}). Tema: {tema}. Moral: {pesan_moral}."
+                    }
+                ],
+                model="llama3-8b-8192",
+            )
             
-            hasil = generate_story_direct(api_key, prompt)
+            # 3. Tampilkan
+            cerita = chat_completion.choices[0].message.content
+            st.success("Selesai!")
+            st.write(cerita)
             
-            if "ERROR" in hasil:
-                st.error("Gagal:")
-                st.code(hasil)
-                # SARAN TERAKHIR JIKA MASIH ERROR
-                st.warning("Jika masih 400/404: API Key kamu mungkin rusak/kadaluwarsa. Silakan buat Key BARU di aistudio.google.com")
-            else:
-                st.success("Selesai!")
-                st.write(hasil)
+    except Exception as e:
+        st.error(f"Terjadi Error: {e}")
