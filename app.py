@@ -83,7 +83,9 @@ def show_landing_page():
         Sistem mendeteksi IP Address perangkat Anda.<br><br>
         Dilarang keras membagikan Link Akses ini kepada orang lain.
         Jika sistem mendeteksi penggunaan tidak wajar (Login dari banyak lokasi berbeda),<br>
-        <span style="font-weight: bold; text-decoration: underline; color: #B71C1C;">Akses akan diblokir permanen tanpa pengembalian dana.</span>
+        <span style="font-weight: bold; text-decoration: underline; color: #B71C1C;">Akses akan diblokir permanen tanpa pengembalian dana.
+        
+        Untuk memudahkan membuka aplikasi ini ke depannya, silahkan klik titik 3 di kanan atas lalu pilih Add to Home screen. </span>
     </div>
     """, unsafe_allow_html=True)
     
@@ -263,4 +265,5 @@ if st.session_state.cerita_ready:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 BIKIN CERITA BARU", on_click=reset_form_only):
         pass
+
 
