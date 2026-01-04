@@ -6,26 +6,68 @@ st.set_page_config(page_title="Dunia Dongeng Ajaib", page_icon="🦄", layout="c
 
 st.markdown("""
 <style>
-    .stApp { background-color: #FFF9C4; color: #4E342E; }
-    h1 { color: #FF6F00; text-align: center; font-family: 'Comic Sans MS', sans-serif; text-shadow: 2px 2px #FFD54F; }
-    
-    /* Tombol Utama (Buat Cerita) */
-    .stButton>button {
-        background-color: #FF9800; color: white; border-radius: 20px; 
-        height: 3em; width: 100%; font-weight: bold; border: 2px solid #F57C00;
+    /* Latar Belakang Aplikasi */
+    .stApp {
+        background-color: #FFF9C4;
     }
-    .stButton>button:hover { background-color: #FB8C00; border-color: #E65100; }
     
-    /* Input Style */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stTextArea>div>div>textarea {
-        background-color: #FFFFFF; border-radius: 10px; color: #333;
+    /* JUDUL & TEXT UTAMA */
+    h1 {
+        color: #FF6F00 !important;
+        text-align: center;
+        font-family: 'Comic Sans MS', sans-serif;
+        text-shadow: 2px 2px #FFD54F;
+    }
+    p, label {
+        color: #4E342E !important; /* Coklat tua agar mudah dibaca */
+    }
+
+    /* INPUT TEXT & TEXT AREA (Kotak Isian) */
+    .stTextInput input, .stTextArea textarea {
+        background-color: #FFFFFF !important;
+        color: #000000 !important; /* HITAM PEKAT */
+        border: 2px solid #FFCC80 !important;
+        border-radius: 10px !important;
+    }
+
+    /* DROPDOWN / SELECTBOX */
+    /* Ini bagian yang tricky di Streamlit, kita paksa warnanya */
+    div[data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        color: #000000 !important; /* HITAM PEKAT */
+        border: 2px solid #FFCC80 !important;
+        border-radius: 10px !important;
+    }
+    /* Mengubah warna teks pilihan di dalam dropdown */
+    div[data-baseweb="select"] span {
+        color: #000000 !important;
+    }
+    
+    /* TOMBOL UTAMA */
+    .stButton>button {
+        background-color: #FF9800 !important;
+        color: white !important;
+        border-radius: 20px !important;
+        height: 3em;
+        width: 100%;
+        font-weight: bold;
+        border: 2px solid #E65100 !important;
+    }
+    .stButton>button:hover {
+        background-color: #FB8C00 !important;
+        border-color: #BF360C !important;
+    }
+    
+    /* Warna Placeholder (Teks samar "Contoh: ...") */
+    ::placeholder {
+        color: #888888 !important;
+        opacity: 1;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. FUNGSI RESET (Untuk Tombol 'Buat Cerita Lain') ---
+# --- 2. FUNGSI RESET ---
 def reset_app():
-    # Mengosongkan semua state input
     st.session_state["nama_anak"] = ""
     st.session_state["usia"] = None
     st.session_state["gender"] = None
@@ -35,7 +77,7 @@ def reset_app():
 
 # --- 3. JUDUL ---
 st.title("🦄 Generator Dongeng Ajaib")
-st.markdown("<p style='text-align: center;'>Masukan data si kecil, dan biarkan keajaiban terjadi! ✨</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #5D4037;'>Masukan data si kecil, dan biarkan keajaiban terjadi! ✨</p>", unsafe_allow_html=True)
 
 # --- 4. SETUP API KEY ---
 try:
@@ -44,8 +86,7 @@ except:
     st.error("⚠️ API Key belum dipasang di Secrets Streamlit!")
     st.stop()
 
-# --- 5. INPUT PENGGUNA (Dengan Session State Keys) ---
-# Kita tambahkan parameter 'key' agar bisa di-reset oleh tombol nanti
+# --- 5. INPUT PENGGUNA ---
 with st.container():
     col1, col2 = st.columns(2)
     
@@ -61,10 +102,7 @@ with st.container():
     pesan_moral = st.text_area("💖 Pesan Moral", placeholder="Contoh: Agar rajin sikat gigi", key="pesan_moral")
 
 # --- 6. LOGIKA UTAMA ---
-# Tombol Eksekusi
 if st.button("✨ Buat Dongeng Seru! ✨"):
-    
-    # Validasi Input
     if not nama_anak or not tema or not gender or not usia:
         st.warning("⚠️ Bunda/Ayah, tolong lengkapi Nama, Usia, Gender, dan Tema dulu ya!")
     else:
@@ -73,7 +111,6 @@ if st.button("✨ Buat Dongeng Seru! ✨"):
             
             with st.spinner('🧚 Peri sedang menulis cerita panjang untukmu...'):
                 
-                # Prompt Engineering (Sesuai request: Panjang 5-7 Paragraf)
                 prompt_system = """
                 Kamu adalah penulis dongeng anak profesional.
                 Gunakan bahasa Indonesia yang deskriptif, ceria, dan mendidik.
@@ -89,7 +126,6 @@ if st.button("✨ Buat Dongeng Seru! ✨"):
                 - Pesan Moral: {pesan_moral}
                 """
 
-                # Request API (Model Terbaru)
                 chat_completion = client.chat.completions.create(
                     messages=[
                         {"role": "system", "content": prompt_system},
@@ -102,21 +138,20 @@ if st.button("✨ Buat Dongeng Seru! ✨"):
                 
                 cerita = chat_completion.choices[0].message.content
                 
-                # Tampilkan Hasil
                 st.balloons()
                 st.success("Hore! Cerita selesai!")
-                
                 st.markdown("---")
-                st.markdown(f"<div style='background-color: #FFFFFF; padding: 25px; border-radius: 15px; border: 3px dashed #FF9800; color: #333; line-height: 1.6;'>{cerita}</div>", unsafe_allow_html=True)
-                
-                st.markdown("---")
+                # Kotak Hasil Cerita
+                st.markdown(f"""
+                <div style='background-color: #FFFFFF; padding: 25px; border-radius: 15px; border: 3px dashed #FF9800; color: #000000; line-height: 1.6; font-family: sans-serif;'>
+                    {cerita}
+                </div>
+                """, unsafe_allow_html=True)
                 
         except Exception as e:
             st.error(f"Terjadi kesalahan: {e}")
 
-# --- 7. TOMBOL RESET (Ditaruh di luar blok 'if' agar selalu muncul setelah proses selesai) ---
-# Tombol ini akan membersihkan semua isian form
+# --- 7. TOMBOL RESET ---
 st.markdown("<br>", unsafe_allow_html=True)
 if st.button("🔄 Buat Cerita Lain (Reset Form)", on_click=reset_app):
-    # Tidak perlu isi kode di sini, karena 'on_click' sudah menjalankan fungsi reset_app
     pass
